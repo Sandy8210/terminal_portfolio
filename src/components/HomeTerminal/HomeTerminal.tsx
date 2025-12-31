@@ -74,37 +74,31 @@ const HomeTerminal = () => {
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
+      if (!history.length) return;
 
-      if (history.length === 0) return;
+      const newIndex =
+        historyIndex === null
+          ? history.length - 1
+          : Math.max(0, historyIndex - 1);
 
-      setHistoryIndex((prev) => {
-        const newIndex =
-          prev === null ? history.length - 1 : Math.max(0, prev - 1);
-
-        setInputVal(history[newIndex]);
-        return newIndex;
-      });
+      setHistoryIndex(newIndex);
+      setInputVal(history[newIndex]);
       return;
     }
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
+      if (!history.length || historyIndex === null) return;
 
-      if (history.length === 0) return;
+      const newIndex = historyIndex + 1;
 
-      setHistoryIndex((prev) => {
-        if (prev === null) return null;
-
-        const newIndex = prev + 1;
-
-        if (newIndex >= history.length) {
-          setInputVal("");
-          return null;
-        }
-
+      if (newIndex >= history.length) {
+        setHistoryIndex(null);
+        setInputVal("");
+      } else {
+        setHistoryIndex(newIndex);
         setInputVal(history[newIndex]);
-        return newIndex;
-      });
+      }
       return;
     }
 
