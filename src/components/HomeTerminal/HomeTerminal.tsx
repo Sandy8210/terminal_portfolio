@@ -226,7 +226,7 @@ const HomeTerminal = () => {
           value={inputVal}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          className="bg-transparent outline-none flex-1 caret-green-400 text-white ml-2"
+          className="bg-transparent outline-none flex-1 min-w-0 caret-green-400 text-white ml-2 whitespace-nowrap text-[16px]"
         />
       </div>
     </div>
