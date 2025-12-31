@@ -1,0 +1,45 @@
+export const experiences = [
+  {
+    role: "Full Stack Developer",
+    company: "Pentafox Technologies",
+    period: "Aug 2024 – Present",
+    location: "Erode",
+    description: [
+      "Developed and maintained responsive web applications using React and Tailwind CSS.",
+      "Collaborated with designers and backend engineers to deliver high-quality features.",
+      "Optimized application performance and improved load times by 30%.",
+    ],
+    technologies: [
+      "React",
+      "JavaScript",
+      "Tailwind CSS",
+      "REST APIs",
+      "GitHub",
+      "Next.js",
+      "Node.js",
+      "MongoDB",
+      "Nest.js",
+      "TypeScript",
+    ],
+  },
+  {
+    role: "Junior Android Developer",
+    company: "Infoserv Technologies",
+    period: "Jun 2023 – Dec 2023",
+    location: "Remote",
+    description: [
+      "Built reusable UI components and landing pages.",
+      "Fixed bugs and improved UI/UX based on client feedback.",
+      "Worked closely with senior developers to learn best practices.",
+    ],
+    technologies: [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "JAVA",
+      "Kotlin",
+      "Shell Script",
+      "Android Studio",
+    ],
+  },
+];
