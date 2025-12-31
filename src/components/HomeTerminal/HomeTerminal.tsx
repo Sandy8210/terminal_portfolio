@@ -1,23 +1,113 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import TermInfo from "./TermInfo";
 import Welcome from "../welcome/Welcome";
 import commandHandlers from "../../utils/commandHandlers";
 import { terminalClear } from "../terminalActions/terminalClear";
 import { terminalEcho } from "../terminalActions/TerminalEcho";
+import { commandRegistry } from "../../utils/commandRegistry";
 
 const HomeTerminal = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [inputVal, setInputVal] = useState("");
-  const [commandHistory, setCommandHistory] = useState<React.ReactNode[]>([]);
+  const [commandRender, setCommandRender] = useState<React.ReactNode[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [history, setHistory] = useState<string[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyIndex, setHistoryIndex] = useState<number | null>(null);
+  const [tabPressCount, setTabPressCount] = useState(0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputVal(e.target.value);
+    setHistoryIndex(null); // stop history navigation
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      if (!inputVal) return;
+
+      const commands = Object.keys(commandRegistry);
+      const matches = commands.filter((cmd) => cmd.startsWith(inputVal));
+
+      if (!matches.length) return;
+
+      if (matches.length === 1) {
+        setInputVal(matches[0]);
+        setTabPressCount(0);
+        return;
+      }
+
+      if (tabPressCount === 0) {
+        setTabPressCount(1);
+        return;
+      }
+
+      const suggestions = (
+        <div key={Date.now()} className="mb-2">
+          <div className="flex items-center">
+            <TermInfo />
+            <span className="ml-2">{inputVal}</span>
+          </div>
+
+          {/* Suggestions */}
+          <div className="mt-1 flex flex-wrap gap-6 pl-6">
+            {matches.map((cmd) => (
+              <span key={cmd}>{cmd}</span>
+            ))}
+          </div>
+        </div>
+      );
+
+      // Print suggestions as terminal output
+      setCommandRender((prev) => [...prev, suggestions]);
+
+      // Force cursor to stay on same input
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+
+      setTabPressCount(0);
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+
+      if (history.length === 0) return;
+
+      setHistoryIndex((prev) => {
+        const newIndex =
+          prev === null ? history.length - 1 : Math.max(0, prev - 1);
+
+        setInputVal(history[newIndex]);
+        return newIndex;
+      });
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+
+      if (history.length === 0) return;
+
+      setHistoryIndex((prev) => {
+        if (prev === null) return null;
+
+        const newIndex = prev + 1;
+
+        if (newIndex >= history.length) {
+          setInputVal("");
+          return null;
+        }
+
+        setInputVal(history[newIndex]);
+        return newIndex;
+      });
+      return;
+    }
+
     if (e.key === "Enter") {
       e.preventDefault();
       if (!inputVal.trim()) return;
@@ -25,13 +115,39 @@ const HomeTerminal = () => {
       const cmd = inputVal.trim();
       const cmdKey = Date.now();
 
+      setHistory((prev) => [...prev, cmd]); // Add command to history list
+
       // Handle clear command specially
       if (cmd.toLowerCase() === "clear") {
         terminalClear({
-          setCommandHistory,
+          setCommandRender,
           setShowWelcome,
           setInputVal,
+          setShowHistory,
         });
+        return;
+      }
+
+      if (cmd.toLowerCase() === "history") {
+        const historyOutput = (
+          <div key={cmdKey} className="mb-2">
+            <div className="flex items-center">
+              <TermInfo />
+              <span className="ml-2">{cmd}</span>
+            </div>
+
+            <div className="mt-1">
+              {history.map((h, i) => (
+                <div key={i}>
+                  {i + 1} {h}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+        setCommandRender((prev) => [...prev, historyOutput]);
+        setInputVal("");
         return;
       }
 
@@ -47,14 +163,19 @@ const HomeTerminal = () => {
           <div className="mt-1">
             {cmd.toLowerCase().startsWith("echo")
               ? terminalEcho(cmd)
-              : commandHandlers[cmd.toLowerCase()]?.() ?? (
+              : // : cmd.toLowerCase() === "history"
+                // ? (() => {
+                //     setShowHistory((prev) => !prev);
+                //     return null;
+                //   })()
+                commandHandlers[cmd.toLowerCase()]?.() ?? (
                   <span className="text-red-400">command not found: {cmd}</span>
                 )}
           </div>
         </div>
       );
 
-      setCommandHistory((prev) => [...prev, newEntry]);
+      setCommandRender((prev) => [...prev, newEntry]);
       setInputVal("");
 
       setTimeout(() => {
@@ -86,7 +207,17 @@ const HomeTerminal = () => {
       )}
 
       {/* Command history */}
-      {commandHistory.map((entry) => entry)}
+      {commandRender.map((entry) => entry)}
+
+      {showHistory && (
+        <div className="mb-2">
+          <div className="mt-1">
+            {history.map((entry) => (
+              <li>{entry}</li>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Current input line - always at the bottom */}
       <div className="flex items-center">

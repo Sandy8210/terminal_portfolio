@@ -1,17 +1,20 @@
 import React from "react";
 
 export interface TerminalClearInterface {
-  setCommandHistory: React.Dispatch<React.SetStateAction<React.ReactNode[]>>;
+  setCommandRender: React.Dispatch<React.SetStateAction<React.ReactNode[]>>;
   setShowWelcome: React.Dispatch<React.SetStateAction<boolean>>;
   setInputVal: React.Dispatch<React.SetStateAction<string>>;
+  setShowHistory: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const terminalClear = ({
-  setCommandHistory,
+  setCommandRender,
   setShowWelcome,
   setInputVal,
+  setShowHistory,
 }: TerminalClearInterface): void => {
-  setCommandHistory([]);
+  setCommandRender([]);
   setShowWelcome(false);
   setInputVal("");
+  setShowHistory(false);
 };
